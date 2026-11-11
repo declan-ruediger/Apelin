@@ -2404,7 +2404,7 @@ do {
     check(launch.environment["IPHONEOS_DEPLOYMENT_TARGET"] == "15.0", "and its deployment target")
 
     let project = ResolvedProject(id: "p-env", name: "Env", path: developmentProject)
-    let entries = AgentRunCode.environment(preset: nil, project: project, installRoot: "/var/jb", home: developmentHome)
+    let entries = AgentRunCode.environment(preset: nil, project: project, installRoot: "/var/jb", home: developmentHome, temporaryExists: { $0 == "/var/jb/var/tmp" })
     let variables = Dictionary(entries.map { entry in
         let parts = entry.split(separator: "=", maxSplits: 1).map(String.init)
         return (parts[0], parts.count > 1 ? parts[1] : "")
@@ -2432,6 +2432,15 @@ do {
     check(presetEntries.contains("PATH=/var/jb/usr/bin:/var/jb/bin:/var/jb/usr/local/bin:/usr/bin:/bin"), "a preset keeps the bare search path")
     check(!presetEntries.contains { $0.hasPrefix("SDKROOT=") || $0.hasPrefix("APELIN_TOOLCHAIN_BIN=") || $0.contains(developmentBin) },
           "and no toolchain or SDK: \(presetEntries)")
+
+    // TMPDIR's fallbacks: a bootstrap without its var/tmp hands the run a
+    // usable one, and with no candidate at all the intent stays spelled out.
+    let noBootstrap = AgentRunCode.environment(preset: nil, project: project, installRoot: "/var/jb", home: developmentHome, temporaryExists: { $0 == "/var/tmp" })
+    check(noBootstrap.contains("TMPDIR=/var/tmp"),
+          "a bootstrap without var/tmp gives shell_run the system TMPDIR: \(noBootstrap)")
+    let noCandidates = AgentRunCode.environment(preset: nil, project: project, installRoot: "/var/jb", home: developmentHome, temporaryExists: { _ in false })
+    check(noCandidates.contains("TMPDIR=/var/jb/var/tmp"),
+          "and with no candidate the TMPDIR keeps its spelling: \(noCandidates)")
 }
 
 // MARK: - shell_run's argv finds a command where its shell would

@@ -65,6 +65,31 @@ enum AgentRunCode {
         installRoot == "/" ? "" : installRoot
     }
 
+    /// Whether a path is a directory a run's TMPDIR can name.
+    private static func temporaryExists(_ path: String) -> Bool {
+        var isDirectory: ObjCBool = false
+        return FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory) && isDirectory.boolValue
+    }
+
+    /// What `TMPDIR` a run gets. The bootstrap's `var/tmp` is the tree's
+    /// intent, but a bootstrap can lack it — clang then dies with "unable to
+    /// make temporary file" — so the system's `/var/tmp` and the home's own
+    /// `tmp` stand in first, and only with nothing existing does the spelling
+    /// stay. Tests pass `temporaryExists` so the fallbacks answer without
+    /// touching the machine's tree.
+    static func temporaryDirectory(
+        installRoot: String,
+        home: String,
+        temporaryExists: ((String) -> Bool)? = nil,
+    ) -> String {
+        let exists = temporaryExists ?? Self.temporaryExists
+        let intended = prefix(for: installRoot) + "/var/tmp"
+        for candidate in [intended, "/var/tmp", home + "/tmp"] where exists(candidate) {
+            return candidate
+        }
+        return intended
+    }
+
     /// Where `sh` would find the command `name`: the first directory of
     /// `searchPath` holding an executable file of that name, canonical. Nil
     /// when none does, and for a path, which is not looked up.
@@ -253,13 +278,14 @@ enum AgentRunCode {
         installRoot: String,
         home: String,
         asRoot: Bool = false,
+        temporaryExists: ((String) -> Bool)? = nil,
     ) -> [String] {
         let base = DevelopmentEnvironment.searchPath(installRoot: installRoot)
         let common = [
             "HOME=\(asRoot ? rootHome : home)",
             "LANG=en_US.UTF-8",
             "TERM=dumb",
-            "TMPDIR=\(prefix(for: installRoot))/var/tmp",
+            "TMPDIR=\(temporaryDirectory(installRoot: installRoot, home: home, temporaryExists: temporaryExists))",
             "APELIN_PROJECT_ROOT=\(project.path)",
         ]
         if let preset {

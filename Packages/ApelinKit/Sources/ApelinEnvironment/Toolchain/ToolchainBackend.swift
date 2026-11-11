@@ -148,7 +148,9 @@ public protocol ToolchainBackend: Sendable {
 
     /// Runs `install` unless the installed bytes already match, verifies them
     /// at `<installRoot>/<installRelativePath>`, self-tests against `sdk`,
-    /// and answers the results. Throws when a C-family case fails.
+    /// and answers the results. A failing Swift case answers as a result —
+    /// registration goes on without that component — and a failing C-family
+    /// case throws, leaving the toolchain unregistered.
     func installAndValidate(
         _ prepared: PreparedToolchain,
         installRoot: URL,

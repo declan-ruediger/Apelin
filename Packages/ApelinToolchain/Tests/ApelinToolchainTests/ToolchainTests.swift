@@ -139,6 +139,23 @@ struct ToolchainTests {
         var limits = ToolchainArchiveLimits(); limits.expandedBytes = 4
         #expect(throws: (any Error).self) { try PackageArchive(limits: limits).extractCPIO(MemoryReader(archive), root: root) }
     }
+
+    @Test func `setup refuses only a failing c family case`() {
+        func result(_ language: String, passed: Bool) -> ToolchainTestResult {
+            ToolchainTestResult(language: language, architecture: "arm64", passed: passed, detail: "", seconds: 0)
+        }
+        // A passed C family beside failing Swift cases registers without Swift.
+        #expect(ToolchainSetup.cFamilyFailure(in: []) == nil)
+        #expect(ToolchainSetup.cFamilyFailure(in: [
+            result("C", passed: true), result("C++", passed: true), result("ObjC", passed: true),
+            result("Swift", passed: false), result("Swift dylib", passed: false),
+        ]) == nil)
+        // One failing C-family case refuses, however the tools name the language.
+        for language in ["C", "C++", "ObjC", "objective-c"] {
+            #expect(ToolchainSetup.cFamilyFailure(in: [result(language, passed: false), result("Swift", passed: true)]) != nil)
+        }
+        #expect(ToolchainSetup.cFamilyFailure(in: [result("C", passed: true), result("Swift", passed: true)]) == nil)
+    }
 }
 
 private final class MemoryReader: ByteReader {

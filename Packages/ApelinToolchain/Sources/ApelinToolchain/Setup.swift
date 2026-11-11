@@ -278,6 +278,8 @@ public extension ToolchainSetup {
     /// The environment host supplies the authenticated Irisin transaction. The closure must be
     /// idempotent for this manifest ID and return only after the transaction is settled.
     /// Task cancellation is checked after installation, never used to claim a transaction rolled back.
+    /// The gate refuses only a failing C-family self-test case; a failing Swift case stays in the
+    /// returned results, so the toolchain registers without that component.
     func installAndValidate(
         manifest: ToolchainManifest,
         tree: URL,
@@ -311,7 +313,12 @@ public extension ToolchainSetup {
             scratch: scratch,
             progress: progress,
         )
-        guard !result.selfTests.isEmpty, result.selfTests.allSatisfy(\.passed) else {
+        // The refused family is the C family's, not every case's: a failing
+        // Swift case stays a result for `register` to record as the failed
+        // component, and only a C-family one throws, because nothing of the
+        // tree compiles without it. The rule is the register policy's mirror
+        // — keep the two language-family rules in step.
+        guard !result.selfTests.isEmpty, Self.cFamilyFailure(in: result.selfTests) == nil else {
             try writeJSON(result, to: record)
             throw ToolchainFailure(
                 "The installed toolchain failed its self-test. The test results are saved with this task.",
@@ -320,5 +327,16 @@ public extension ToolchainSetup {
         result.stage = .ready; try writeJSON(result, to: record)
         progress(.init(stage: .ready, completedBytes: 0, totalBytes: nil, detail: manifest.id))
         return result
+    }
+
+    /// The first failing C-family self-test case — the family setup refuses a
+    /// toolchain on — or nil. A case's language is its first word (`Swift
+    /// dylib` counts as Swift), with the C family's names kept wide the way
+    /// the register policy reads them.
+    static func cFamilyFailure(in selfTests: [ToolchainTestResult]) -> ToolchainTestResult? {
+        let cFamily: Set<String> = ["c", "c++", "objc", "objective-c"]
+        return selfTests.first {
+            !$0.passed && cFamily.contains(String($0.language.lowercased().split(separator: " ").first ?? ""))
+        }
     }
 }
