@@ -198,6 +198,19 @@ console now goes on after a restart only past a successful respring.
 
 ## Still to run on the owner's devices
 
+- [ ] Trae, Trae CN and Raccoon with an account (2026-11-11, PR #40,
+      AGENTS.md ▸ Agent sign-in; the record below has what ran without
+      one). JanXiao signed in to all three and chatted on a device before
+      their code moved into kwwk; from kwwk 0.1.118 nothing has run past
+      each gate's refusal of a made-up code. With an account of each:
+      Settings ▸ Model Providers ▸ Trae CN (then Trae, then Raccoon) signs
+      in in the browser, Fetch Models lists the account's own models, a
+      chat answers and calls a tool, and the same chat still answers after
+      the token's hour or day has passed, which is the renewal. The
+      international Trae's sign-in first asks where its page is. WorkBuddy
+      or WorkBuddy AI with an account: Fetch Models lists the models its
+      plan has, more than the bundled rows, each with its own levels.
+
 - [ ] A toolchain unpacked on a real device (2026-11-06, Bugs ▸ 10). The fix
       was measured on the iOS 15.5 runtime and run on iOS 26 and 27 vphones;
       no iOS 16, 17 or 18 Foundation has run it, and which of them holds the
@@ -2997,3 +3010,80 @@ the machine's socket, so every script had its setup, checks and cleanup.
   the script expects `conflict`. That vphone has no git author: with one
   set the script passed, and the author was cleared again. The script
   assumes an author its entry in `device-harness.json` does not ask for.
+
+## 0.4.2 release smoke (2026-11-11, CI build 140 of `bc0c800`)
+
+CI's roothide package of the release commit, before the tag, over build
+298 on the iOS 26.4 iPad vphone: it installed as 0.4.2 (140), the app and
+the daemon came up, and the smoke suite passed (`hello`, `terminal`,
+`logs`, `diagnostics`, `i3-image-check-refused`, `i1-smoke`), with `files`
+skipped for want of a tweak extension, toolchain or SDK. The release's
+`SHA256SUMS` names that same file.
+
+The iOS 26.4 iPhone vphone did not get it: its host runs one guest at a
+time, and another task had taken the slot by then. It ran the round above
+on build 298, the same code under the earlier version number.
+
+## A package's depictions and their skill (2026-11-11, build 304)
+
+The code of `49ab2f8` built on the Mac (roothide, 0.4.2), over build 298
+on the iOS 26.4 iPhone vphone, issue #44:
+
+- The smoke suite passed, all seven.
+- A project made from the tweak template, given `package.depiction` and
+  `package.sileoDepiction`, passed `projectCheck` and a release
+  `buildStart`. `dpkg-deb -f` on the guest read the package's control:
+  `Icon`, then `Depiction` and `SileoDepiction` with the two addresses, as
+  written. The project, its build and its record were removed afterwards.
+- The skill, in a new General Chat (Strict, deepseek-v4-pro), asked only
+  how to give a tweak's page in a package manager a changelog tab and to
+  read the skill that covers it: the model called `apelin_skill_read` with
+  `apelin-package-depiction`, found by its description in the prompt's
+  list (the chat's journal has the call, 3,672 bytes in 78 lines), and
+  answered the skill's name, its file `depiction.json` and the two
+  members.
+
+Not run: a depiction served from a real address and drawn by Irisin or
+Sileo for a package built here (the addresses above are placeholders that
+answer nothing), the Strict install card after a member is added, and
+anything on the iPad vphone, which has no toolchain, SDK or signed-in
+provider.
+
+## Trae, Raccoon and the model row above the field (2026-11-11, PR #40)
+
+The branch of PR #40 with its three providers taken from kwwk (the code
+of kwwk 0.1.118), built on the Mac (roothide, 0.4.3), over build 304 on
+the iOS 26.4 iPhone vphone:
+
+- The smoke suite passed, all seven, and `accounts` passed with its new
+  steps: the list has Trae CN, Trae and Raccoon after WorkBuddy, and Trae
+  CN's and Raccoon's sign-ins each started, named its page, refused an
+  address that is no redirect and were cancelled.
+- Trae CN from Settings ▸ Model Providers: its page (the hint, the link
+  plate for www.trae.cn, Paste Redirect Address) under the system's
+  consent for www.trae.cn. The link named a loopback on a free port,
+  `/authorize`. From the guest itself, a request to it with no payload
+  was answered 404 and the page went on waiting; one with a made-up
+  `authCodeInfo` was answered 200, the exchange went to api.trae.cn, and
+  the page ended Sign-In Failed with the gate's refusal.
+- Raccoon the same way: a loopback at `/auth/callback`, a made-up `code`
+  with the page's own state, and Sign-In Failed in words for a code the
+  gate does not know.
+- Model Providers lists Trae CN, Trae and Raccoon after WorkBuddy, each
+  with its mark.
+- The composer: the model row above the text band at rest and with the
+  keyboard up; the import panel in the row's place, above the text band;
+  and a root approval's card (a chat on deepseek-v4-pro asked to run `id`
+  as root) over the text band's place with the row hidden. Deny brought
+  the row and the field back.
+
+From the Mac, with made-up values and no account: api.marscode.com named
+the international sign-in page (`www.trae.ai`); the international account
+gates answered a made-up auth code and a made-up refresh token with their
+own refusals, and the international chat gate answered a renewal 404,
+which is why a login that recorded no gate is renewed at an account gate;
+Raccoon's portal answered its authorize address 307 with the loopback
+redirect kept.
+
+Not run: what Still to run lists for these providers, and anything on the
+iPad vphone.
