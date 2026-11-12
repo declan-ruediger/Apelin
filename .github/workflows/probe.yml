@@ -1,0 +1,45 @@
+name: CI probe
+
+# Diagnostic: one echo per GitHub-hosted runner label, to see which labels
+# this fork can plan jobs against. The fork's ci.yml twice died as a
+# startup_failure with zero check runs (2026-11-11 and 2026-11-12), while the
+# same file and labels run green upstream. Delete this workflow together with
+# the branch once the real CI passes.
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ubuntu:
+    name: ubuntu-latest
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Echo
+        run: echo "ubuntu-latest is answerable for this fork"
+
+  macos-ga:
+    name: macos-26
+    runs-on: macos-26
+    timeout-minutes: 5
+    steps:
+      - name: Xcode inventory
+        run: |
+          ls /Applications | grep -i xcode || true
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
+
+  macos-preview:
+    name: xcode-27
+    runs-on: xcode-27
+    timeout-minutes: 5
+    steps:
+      - name: Xcode inventory
+        run: |
+          ls /Applications | grep -i xcode || true
+          sudo xcode-select -s /Applications/Xcode_27.1.app/Contents/Developer
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
